@@ -66,23 +66,21 @@ static NSDictionary *errorCodeDictionary = nil;
                                                     data:data
                                                    error:error];
     if (!*error && [responseObject isKindOfClass:[NSDictionary class]]) {
-    	if (!*error && [responseObject isKindOfClass:[NSDictionary class]]) {
-	        if ([errorCodeDictionary objectForKey:[[[responseObject objectForKey:@"__type"] componentsSeparatedByString:@"#"] lastObject]]) {
-	            if (error) {
-	                *error = [NSError errorWithDomain:AWSSNSErrorDomain
-	                                             code:[[errorCodeDictionary objectForKey:[[[responseObject objectForKey:@"__type"] componentsSeparatedByString:@"#"] lastObject]] integerValue]
-	                                         userInfo:responseObject];
-	            }
-	            return responseObject;
-	        } else if ([[[responseObject objectForKey:@"__type"] componentsSeparatedByString:@"#"] lastObject]) {
-	            if (error) {
-	                *error = [NSError errorWithDomain:AWSCognitoIdentityErrorDomain
-	                                             code:AWSCognitoIdentityErrorUnknown
-	                                         userInfo:responseObject];
-	            }
-	            return responseObject;
-	        }
-    	}
+        if (errorCodeDictionary[responseObject[@"Error"][@"Code"]]) {
+            if (error) {
+                *error = [NSError errorWithDomain:AWSSNSErrorDomain
+                                             code:[errorCodeDictionary[responseObject[@"Error"][@"Code"]] integerValue]
+                                         userInfo:responseObject];
+            }
+            return responseObject;
+        } else if (responseObject[@"Error"][@"Code"]) {
+            if (error) {
+                *error = [NSError errorWithDomain:AWSCognitoIdentityErrorDomain
+                                             code:AWSCognitoIdentityErrorUnknown
+                                         userInfo:responseObject];
+            }
+            return responseObject;
+        }
     }
 
     if (!*error && response.statusCode/100 != 2) {
